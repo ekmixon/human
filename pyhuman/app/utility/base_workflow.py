@@ -5,7 +5,7 @@ class BaseWorkflow(object):
 
     @property
     def display(self):
-        return 'Running Task: {}'.format(self.description)
+        return f'Running Task: {self.description}'
 
     __slots__ = ['name', 'description', 'driver']
 

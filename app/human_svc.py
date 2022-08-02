@@ -28,7 +28,7 @@ class HumanService(BaseService):
                                                     task_cluster_interval=data.pop('task_cluster_interval'), extra=data.pop('extra', []))
             return (await self.data_svc.locate('humans', match=dict(name=name)))[0].display
         except Exception as e:
-            self.log.error('Error building human. %s' % e)
+            self.log.error(f'Error building human. {e}')
 
     async def load_humans(self, data):
         return [h.display for h in await self.data_svc.locate('humans', match=dict(name=data.get('name')))]
@@ -36,7 +36,7 @@ class HumanService(BaseService):
     async def load_available_workflows(self):
         root = os.path.join(self.pyhuman_path, 'app', 'workflows')
         for f in os.listdir(root):
-            if os.path.isfile(os.path.join(root, f)) and not f[0] == '_':
+            if os.path.isfile(os.path.join(root, f)) and f[0] != '_':
                 await self._load_workflow_module(root, f)
 
     """ PRIVATE """
@@ -47,10 +47,10 @@ class HumanService(BaseService):
             loaded = getattr(import_module(module), 'load')(driver=None)
             await self.data_svc.store(Workflow(name=loaded.name, description=loaded.description, file=workflow_file))
         except Exception as e:
-            self.log.error('Error loading extension=%s, %s' % (module, e))
+            self.log.error(f'Error loading extension={module}, {e}')
 
     async def _create_windows_archive(self, payload_path, behaviors, name):
-        file_name = name + '.zip'
+        file_name = f'{name}.zip'
         win_zip = zipfile.ZipFile(os.path.join(payload_path, file_name), 'w')
         for behavior in behaviors:
             arc_name = os.path.join('app', 'workflows', os.path.basename(behavior))
@@ -68,7 +68,7 @@ class HumanService(BaseService):
         win_zip.close()
 
     async def _create_unix_archive(self, payload_path, behaviors, name):
-        file_name = name + '.tar.gz'
+        file_name = f'{name}.tar.gz'
         unix_tar = tarfile.open(os.path.join(payload_path, file_name), 'w:gz')
         unix_tar.add(os.path.join(self.pyhuman_path, 'data'), arcname='data/.')
         unix_tar.add(os.path.join(self.pyhuman_path, 'app', 'utility'), arcname='app/utility/.')
@@ -83,7 +83,7 @@ class HumanService(BaseService):
         payload_path = os.path.abspath(os.path.join(self.human_dir, 'payloads'))
         behaviors = []
         behaviors, workflows = await self._append_module_paths(modules, behaviors)
-        self.log.debug('Compressing new human: %s' % name)
+        self.log.debug(f'Compressing new human: {name}')
 
         if platform == 'windows-psh':
             await self._create_windows_archive(payload_path, behaviors, name)
@@ -97,6 +97,6 @@ class HumanService(BaseService):
         workflows = []
         for sm in modules:
             workflow = await self.data_svc.locate('workflows', match=dict(name=sm))
-            behaviors += ['/app/workflows/' + workflow[0].file]
+            behaviors += [f'/app/workflows/{workflow[0].file}']
             workflows.append(workflow[0])
         return behaviors, workflows
