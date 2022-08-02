@@ -17,7 +17,7 @@ EXTRA_DEFAULTS = []
 
 def emulation_loop(workflows, clustersize, taskinterval, taskgroupinterval, extra):
     while True:
-        for c in range(clustersize):
+        for _ in range(clustersize):
             sleep(random.randrange(taskinterval))
             index = random.randrange(len(workflows))
             print(workflows[index].display)
@@ -28,10 +28,9 @@ def emulation_loop(workflows, clustersize, taskinterval, taskgroupinterval, extr
 def import_workflows(webdriver_helper):
     extensions = []
     for root, dirs, files in os.walk(os.path.join('app', 'workflows')):
-        files = [f for f in files if not f[0] == '.' and not f[0] == "_"]
-        dirs[:] = [d for d in dirs if not d[0] == '.' and not d[0] == "_"]
-        for file in files:
-            extensions.append(load_module(root, file, webdriver_helper))
+        files = [f for f in files if f[0] not in ['.', "_"]]
+        dirs[:] = [d for d in dirs if d[0] not in ['.', "_"]]
+        extensions.extend(load_module(root, file, webdriver_helper) for file in files)
     return extensions
 
 
@@ -40,7 +39,7 @@ def load_module(root, file, webdriver_helper):
     try:
         return getattr(import_module(module), 'load')(driver=webdriver_helper)
     except Exception as e:
-        print('Error could not load workflow. {}'.format(e))
+        print(f'Error could not load workflow. {e}')
 
 
 def run(clustersize, taskinterval, taskgroupinterval, extra):

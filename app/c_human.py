@@ -11,7 +11,7 @@ class Human(BaseObject):
 
     @property
     def unique(self):
-        return self.hash('%s' % self.name)
+        return self.hash(f'{self.name}')
 
     def __init__(self, name, platform, task_interval, task_cluster_interval, tasks_per_cluster, extra, workflows):
         super().__init__()

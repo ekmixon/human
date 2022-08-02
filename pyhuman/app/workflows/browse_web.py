@@ -24,10 +24,10 @@ class WebBrowse(BaseWorkflow):
         random_website = self._get_random_website()
         try:
             with self.driver as d:
-                d.get('https://' + random_website)
+                d.get(f'https://{random_website}')
                 sleep(2)
         except Exception as e:
-            print('Error loading random website %s: %s' % (random_website.rstrip(), e))
+            print(f'Error loading random website {random_website.rstrip()}: {e}')
 
     def _get_random_website(self):
         return random.choice(self.website_list)
@@ -36,7 +36,6 @@ class WebBrowse(BaseWorkflow):
     def _load_website_list():
         wordlist = []
         with open(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..',
-                                               'data', 'websites.txt')), 'r') as f:
-            for line in f:
-                wordlist.append(line)
+                                                   'data', 'websites.txt')), 'r') as f:
+            wordlist.extend(iter(f))
         return wordlist
